@@ -1,10 +1,29 @@
 # Deferred Token
 
-### 목적
+### Objective
 
 > Cooldown 시간 이후, 토큰을 상환받을 수 있는 권리를 가진 Wrapped 토큰 컨트랙트
 
-### 주요 함수
+### setup
+
+#### 1. 패키지 설치
+
+````shell
+yarn install
+````
+
+#### 2. private key 세팅하기
+
+(tasks 호출 시 필요) 배포된 컨트랙트와 상호작용할 계정의 private key를 세팅합니다. 
+`.env.example` 파일을 `.env`로 복사한 후, `PRIVATE_KEY` 필드에 privatekey를 세팅해주시면 됩니다.
+
+````shell
+MNEMONIC="test test test test test test test test test test test junk"
+PRIVATE_KEY="0x000000000000000"
+````
+
+
+### Explanation
 
 기본적으로 ERC20 토큰 스펙을 준수하며, 아래 확장 기능을 추가하였습니다.
 
