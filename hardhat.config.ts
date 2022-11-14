@@ -1,6 +1,7 @@
 import "dotenv/config";
 import "@nomiclabs/hardhat-solhint";
 import "@nomiclabs/hardhat-waffle";
+import "@nomiclabs/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-contract-sizer";
 import "hardhat-deploy";
@@ -10,8 +11,8 @@ import "hardhat-abi-exporter";
 import "hardhat-spdx-license-identifier";
 import "hardhat-tracer";
 import "@primitivefi/hardhat-dodoc";
-import "@nomiclabs/hardhat-ethers";
 import "solidity-coverage";
+import "./tasks";
 
 import { HardhatUserConfig } from "hardhat/config";
 
@@ -22,18 +23,19 @@ const accounts = {
 };
 
 const config: HardhatUserConfig = {
-  defaultNetwork: process.env.NETWORK ? process.env.NETWORK : "localhost",
+  defaultNetwork: process.env.NETWORK ? process.env.NETWORK : "hardhat",
   gasReporter: {
     currency: "ETH",
     gasPrice: 250,
     enabled: true,
   },
   networks: {
+    localhost: {
+      url: "http://127.0.0.1:8545",
+    },
     hardhat: {
       tags: ["test", "local"],
       gasPrice: 250000000000,
-      accounts,
-      // Solidity-coverage overrides gasPrice to 1 which is not compatible with EIP1559
       hardfork: process.env.CODE_COVERAGE ? "berlin" : "london",
     },
     baobab: {
@@ -56,8 +58,8 @@ const config: HardhatUserConfig = {
     dev: {
       default: 1,
     },
-    holder: {
-      default: 2,
+    user: {
+      default: "privatekey://" + process.env.PRIVATE_KEY!,
     },
   },
   paths: {
