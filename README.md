@@ -52,7 +52,7 @@ struct WithdrawalRequest {
     uint256 id;        // @dev 상환 요청 식별자, withdraw 시 parameter 로 활용
     uint256 amount;    // @dev 상환 요청 갯수
     uint256 requestTs; // @dev 상환 요청 시각, cooldown 시간 이후 호출 가능
-    bool isClaimed;    // @dev 상환 여부 (조회 시 항상 false)
+    bool isClaimed;    // @dev 상환 여부
 }
 ````
 
@@ -71,8 +71,8 @@ function withdrawalRequestByIndex(address owner, uint256 index) external view re
 );
 ````
 
-#### 5. 토큰 인출하기
-상환 요청 수행하기. msg.sender로 토큰을 반환합니다  
+#### 5. 토큰 상환하기
+상환하기. msg.sender로 토큰을 반환합니다  
 
 ````solidity
 function withdraw(uint256 requestId) external;
