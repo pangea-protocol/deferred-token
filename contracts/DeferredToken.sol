@@ -25,7 +25,7 @@ contract DeferredToken is
 
     uint256 public cooldownPeriod;
 
-    WithdrawalRequest[] public withdrawalRequests;
+    WithdrawalRequest[] public _withdrawalRequests;
 
     mapping(address => uint256) public _withdrawalRequestCounts;
     mapping(uint256 => address) public requestOwnerOf;
@@ -53,6 +53,11 @@ contract DeferredToken is
         return IERC20Metadata(token).decimals();
     }
 
+    /// @notice 상환 요청 정보
+    function withdrawalRequests(uint256 requestId) external view returns (WithdrawalRequest memory) {
+        return _withdrawalRequests[requestId];
+    }
+
     /// @notice 유저 별 상환 요청 갯수
     function withdrawalRequestCounts(address owner) external view returns (uint256) {
         return _withdrawalRequestCounts[owner];
@@ -63,13 +68,15 @@ contract DeferredToken is
     /// @param index 0 ~ withdrawalRequestCounts(owner) - 1의 값
     function withdrawalRequestByIndex(address owner, uint256 index) external view returns (WithdrawalRequest memory) {
         uint256 requestId = _ownedRequests[owner][index];
-        return withdrawalRequests[requestId];
+        return _withdrawalRequests[requestId];
     }
 
     /// @notice 토큰을 예치하여, deferredToken 발행
     /// @param amount 예치할 토큰의 양
     /// @dev 호출 전, token에 대해 approve을 수행해야 합니다.
     function deposit(uint256 amount) external whenNotPaused {
+        require(amount > 0, "NOT_ZERO");
+
         IERC20Metadata(token).safeTransferFrom(
             msg.sender,
             address(this),
@@ -86,6 +93,9 @@ contract DeferredToken is
     function requestWithdrawal(
         uint256 amount
     ) external whenNotPaused returns (uint256 requestId) {
+        require(amount > 0, "NOT_ZERO");
+        require(amount <= balanceOf(msg.sender), "INSUFFICIENT_BALANCE");
+
         _burn(msg.sender, amount);
 
         requestId = openRequest(msg.sender, amount);
@@ -100,12 +110,12 @@ contract DeferredToken is
     function withdraw(
         uint256 requestId
     ) external whenNotPaused returns (uint256 amount) {
-        WithdrawalRequest memory request = withdrawalRequests[requestId];
-        require(!request.isClaimed, "ALREADY CLAIMED");
-        require(requestOwnerOf[requestId] == msg.sender, "NOT OWNER");
+        WithdrawalRequest memory request = _withdrawalRequests[requestId];
+        require(!request.isClaimed, "ALREADY_CLAIMED");
+        require(requestOwnerOf[requestId] == msg.sender, "NOT_OWNER");
         require(
             request.requestTs + cooldownPeriod <= block.timestamp,
-            "NEED COOLDOWN"
+            "NEED_COOLDOWN"
         );
         amount = request.amount;
 
@@ -120,8 +130,8 @@ contract DeferredToken is
         address owner,
         uint256 amount
     ) internal returns (uint256 requestId) {
-        requestId = withdrawalRequests.length;
-        withdrawalRequests.push(
+        requestId = _withdrawalRequests.length;
+        _withdrawalRequests.push(
             WithdrawalRequest(requestId, amount, block.timestamp, false)
         );
 
@@ -133,7 +143,7 @@ contract DeferredToken is
     }
 
     function closeRequest(address owner, uint256 requestId) internal {
-        withdrawalRequests[requestId].isClaimed = true;
+        _withdrawalRequests[requestId].isClaimed = true;
 
         uint256 lastRequestIndex = --_withdrawalRequestCounts[owner];
         uint256 requestIndex = _ownedRequestsIndex[requestId];

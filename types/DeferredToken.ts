@@ -17,8 +17,29 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
+export type WithdrawalRequestStruct = {
+  id: BigNumberish;
+  amount: BigNumberish;
+  requestTs: BigNumberish;
+  isClaimed: boolean;
+};
+
+export type WithdrawalRequestStructOutput = [
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  boolean
+] & {
+  id: BigNumber;
+  amount: BigNumber;
+  requestTs: BigNumber;
+  isClaimed: boolean;
+};
+
 export interface DeferredTokenInterface extends utils.Interface {
   functions: {
+    "_withdrawalRequestCounts(address)": FunctionFragment;
+    "_withdrawalRequests(uint256)": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -44,10 +65,19 @@ export interface DeferredTokenInterface extends utils.Interface {
     "transferOwnership(address)": FunctionFragment;
     "unpause()": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
+    "withdrawalRequestByIndex(address,uint256)": FunctionFragment;
     "withdrawalRequestCounts(address)": FunctionFragment;
     "withdrawalRequests(uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "_withdrawalRequestCounts",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "_withdrawalRequests",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "allowance",
     values: [string, string]
@@ -119,6 +149,10 @@ export interface DeferredTokenInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "withdrawalRequestByIndex",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "withdrawalRequestCounts",
     values: [string]
   ): string;
@@ -127,6 +161,14 @@ export interface DeferredTokenInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "_withdrawalRequestCounts",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "_withdrawalRequests",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -183,6 +225,10 @@ export interface DeferredTokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "withdrawalRequestByIndex",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "withdrawalRequestCounts",
     data: BytesLike
   ): Result;
@@ -200,6 +246,7 @@ export interface DeferredTokenInterface extends utils.Interface {
     "RequestWithdrawal(address,uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
     "Unpaused(address)": EventFragment;
+    "UpdateCooldownPeriod(uint256)": EventFragment;
     "Withdraw(address,uint256,uint256)": EventFragment;
   };
 
@@ -211,6 +258,7 @@ export interface DeferredTokenInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "RequestWithdrawal"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UpdateCooldownPeriod"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
 }
 
@@ -263,6 +311,14 @@ export type UnpausedEvent = TypedEvent<[string], { account: string }>;
 
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
 
+export type UpdateCooldownPeriodEvent = TypedEvent<
+  [BigNumber],
+  { period: BigNumber }
+>;
+
+export type UpdateCooldownPeriodEventFilter =
+  TypedEventFilter<UpdateCooldownPeriodEvent>;
+
 export type WithdrawEvent = TypedEvent<
   [string, BigNumber, BigNumber],
   { owner: string; amount: BigNumber; requestId: BigNumber }
@@ -297,6 +353,23 @@ export interface DeferredToken extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    _withdrawalRequestCounts(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    _withdrawalRequests(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, boolean] & {
+        id: BigNumber;
+        amount: BigNumber;
+        requestTs: BigNumber;
+        isClaimed: boolean;
+      }
+    >;
+
     allowance(
       owner: string,
       spender: string,
@@ -399,23 +472,39 @@ export interface DeferredToken extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    withdrawalRequestByIndex(
+      owner: string,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[WithdrawalRequestStructOutput]>;
+
     withdrawalRequestCounts(
-      arg0: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
     withdrawalRequests(
-      arg0: BigNumberish,
+      requestId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, BigNumber, boolean] & {
-        id: BigNumber;
-        amount: BigNumber;
-        requestTs: BigNumber;
-        isClaimed: boolean;
-      }
-    >;
+    ): Promise<[WithdrawalRequestStructOutput]>;
   };
+
+  _withdrawalRequestCounts(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  _withdrawalRequests(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, boolean] & {
+      id: BigNumber;
+      amount: BigNumber;
+      requestTs: BigNumber;
+      isClaimed: boolean;
+    }
+  >;
 
   allowance(
     owner: string,
@@ -519,24 +608,40 @@ export interface DeferredToken extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  withdrawalRequestByIndex(
+    owner: string,
+    index: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<WithdrawalRequestStructOutput>;
+
   withdrawalRequestCounts(
-    arg0: string,
+    owner: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   withdrawalRequests(
-    arg0: BigNumberish,
+    requestId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber, BigNumber, boolean] & {
-      id: BigNumber;
-      amount: BigNumber;
-      requestTs: BigNumber;
-      isClaimed: boolean;
-    }
-  >;
+  ): Promise<WithdrawalRequestStructOutput>;
 
   callStatic: {
+    _withdrawalRequestCounts(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    _withdrawalRequests(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, boolean] & {
+        id: BigNumber;
+        amount: BigNumber;
+        requestTs: BigNumber;
+        isClaimed: boolean;
+      }
+    >;
+
     allowance(
       owner: string,
       spender: string,
@@ -627,22 +732,21 @@ export interface DeferredToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    withdrawalRequestByIndex(
+      owner: string,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<WithdrawalRequestStructOutput>;
+
     withdrawalRequestCounts(
-      arg0: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     withdrawalRequests(
-      arg0: BigNumberish,
+      requestId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, BigNumber, boolean] & {
-        id: BigNumber;
-        amount: BigNumber;
-        requestTs: BigNumber;
-        isClaimed: boolean;
-      }
-    >;
+    ): Promise<WithdrawalRequestStructOutput>;
   };
 
   filters: {
@@ -703,6 +807,11 @@ export interface DeferredToken extends BaseContract {
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
 
+    "UpdateCooldownPeriod(uint256)"(
+      period?: null
+    ): UpdateCooldownPeriodEventFilter;
+    UpdateCooldownPeriod(period?: null): UpdateCooldownPeriodEventFilter;
+
     "Withdraw(address,uint256,uint256)"(
       owner?: string | null,
       amount?: null,
@@ -716,6 +825,16 @@ export interface DeferredToken extends BaseContract {
   };
 
   estimateGas: {
+    _withdrawalRequestCounts(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    _withdrawalRequests(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     allowance(
       owner: string,
       spender: string,
@@ -818,18 +937,34 @@ export interface DeferredToken extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    withdrawalRequestByIndex(
+      owner: string,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     withdrawalRequestCounts(
-      arg0: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     withdrawalRequests(
-      arg0: BigNumberish,
+      requestId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    _withdrawalRequestCounts(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    _withdrawalRequests(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     allowance(
       owner: string,
       spender: string,
@@ -935,13 +1070,19 @@ export interface DeferredToken extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    withdrawalRequestByIndex(
+      owner: string,
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     withdrawalRequestCounts(
-      arg0: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     withdrawalRequests(
-      arg0: BigNumberish,
+      requestId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

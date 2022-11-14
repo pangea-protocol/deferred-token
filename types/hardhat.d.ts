@@ -45,6 +45,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ContextUpgradeable__factory>;
     getContractFactory(
+      name: "ERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20__factory>;
+    getContractFactory(
       name: "IERC20Permit",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20Permit__factory>;
@@ -60,6 +64,18 @@ declare module "hardhat/types/runtime" {
       name: "DeferredToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DeferredToken__factory>;
+    getContractFactory(
+      name: "IDeferredToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IDeferredToken__factory>;
+    getContractFactory(
+      name: "IDeferredTokenEvent",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IDeferredTokenEvent__factory>;
+    getContractFactory(
+      name: "Token",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Token__factory>;
 
     getContractAt(
       name: "OwnableUpgradeable",
@@ -102,6 +118,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ContextUpgradeable>;
     getContractAt(
+      name: "ERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20>;
+    getContractAt(
       name: "IERC20Permit",
       address: string,
       signer?: ethers.Signer
@@ -121,6 +142,21 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.DeferredToken>;
+    getContractAt(
+      name: "IDeferredToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IDeferredToken>;
+    getContractAt(
+      name: "IDeferredTokenEvent",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IDeferredTokenEvent>;
+    getContractAt(
+      name: "Token",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Token>;
 
     // default types
     getContractFactory(

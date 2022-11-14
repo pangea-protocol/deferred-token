@@ -9,10 +9,14 @@ export type { ERC20PausableUpgradeable } from "./ERC20PausableUpgradeable";
 export type { IERC20MetadataUpgradeable } from "./IERC20MetadataUpgradeable";
 export type { IERC20Upgradeable } from "./IERC20Upgradeable";
 export type { ContextUpgradeable } from "./ContextUpgradeable";
+export type { ERC20 } from "./ERC20";
 export type { IERC20Permit } from "./IERC20Permit";
 export type { IERC20Metadata } from "./IERC20Metadata";
 export type { IERC20 } from "./IERC20";
 export type { DeferredToken } from "./DeferredToken";
+export type { IDeferredToken } from "./IDeferredToken";
+export type { IDeferredTokenEvent } from "./IDeferredTokenEvent";
+export type { Token } from "./Token";
 
 export { OwnableUpgradeable__factory } from "./factories/OwnableUpgradeable__factory";
 export { Initializable__factory } from "./factories/Initializable__factory";
@@ -22,7 +26,11 @@ export { ERC20PausableUpgradeable__factory } from "./factories/ERC20PausableUpgr
 export { IERC20MetadataUpgradeable__factory } from "./factories/IERC20MetadataUpgradeable__factory";
 export { IERC20Upgradeable__factory } from "./factories/IERC20Upgradeable__factory";
 export { ContextUpgradeable__factory } from "./factories/ContextUpgradeable__factory";
+export { ERC20__factory } from "./factories/ERC20__factory";
 export { IERC20Permit__factory } from "./factories/IERC20Permit__factory";
 export { IERC20Metadata__factory } from "./factories/IERC20Metadata__factory";
 export { IERC20__factory } from "./factories/IERC20__factory";
 export { DeferredToken__factory } from "./factories/DeferredToken__factory";
+export { IDeferredToken__factory } from "./factories/IDeferredToken__factory";
+export { IDeferredTokenEvent__factory } from "./factories/IDeferredTokenEvent__factory";
+export { Token__factory } from "./factories/Token__factory";

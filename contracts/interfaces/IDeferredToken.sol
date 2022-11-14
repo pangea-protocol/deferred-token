@@ -31,7 +31,6 @@ interface IDeferredTokenStruct {
 }
 
 interface IDeferredToken is IDeferredTokenStruct, IDeferredTokenEvent {
-
     /// @notice 상환 / 예치할 토큰
     function token() external view returns (address);
 
@@ -39,13 +38,20 @@ interface IDeferredToken is IDeferredTokenStruct, IDeferredTokenEvent {
     function cooldownPeriod() external view returns (uint256);
 
     /// @notice 상환 요청 정보
-    function withdrawalRequests(uint256 requestId) external view returns (WithdrawalRequest memory);
+    function withdrawalRequests(
+        uint256 requestId
+    ) external view returns (WithdrawalRequest memory);
 
     /// @notice 유저 별 상환 요청 갯수
-    function withdrawalRequestCounts(address owner) external view returns (uint256);
+    function withdrawalRequestCounts(
+        address owner
+    ) external view returns (uint256);
 
     /// @notice 유저 별 상환 요청 정보로, index는 [0, withdrawalRequestCounts(owner) - 1)
-    function withdrawalRequestByIndex(address owner, uint256 index) external view returns (WithdrawalRequest memory);
+    function withdrawalRequestByIndex(
+        address owner,
+        uint256 index
+    ) external view returns (WithdrawalRequest memory);
 
     /// @notice 토큰을 예치하여, DeferredToken을 발행
     function deposit(uint256 amount) external;
