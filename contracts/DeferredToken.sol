@@ -53,15 +53,22 @@ contract DeferredToken is
         return IERC20Metadata(token).decimals();
     }
 
+    /// @notice 유저 별 상환 요청 갯수
     function withdrawalRequestCounts(address owner) external view returns (uint256) {
         return _withdrawalRequestCounts[owner];
     }
 
+    /// @notice 유저 별 상환 요청 정보 가져오기,
+    /// @param owner 상환 요청한 유저의 주소
+    /// @param index 0 ~ withdrawalRequestCounts(owner) - 1의 값
     function withdrawalRequestByIndex(address owner, uint256 index) external view returns (WithdrawalRequest memory) {
         uint256 requestId = _ownedRequests[owner][index];
         return withdrawalRequests[requestId];
     }
 
+    /// @notice 토큰을 예치하여, deferredToken 발행
+    /// @param amount 예치할 토큰의 양
+    /// @dev 호출 전, token에 대해 approve을 수행해야 합니다.
     function deposit(uint256 amount) external whenNotPaused {
         IERC20Metadata(token).safeTransferFrom(
             msg.sender,
@@ -73,6 +80,9 @@ contract DeferredToken is
         emit Deposit(msg.sender, amount);
     }
 
+    /// @notice 토큰에 대해 상환 요청. cooldown 기간 이후로 withdraw 호출하면 받을 수 있음.
+    /// @param amount 예치할 토큰의 양
+    /// @dev 호출 후, deferredToken은 소각됩니다.
     function requestWithdrawal(
         uint256 amount
     ) external whenNotPaused returns (uint256 requestId) {
@@ -83,6 +93,10 @@ contract DeferredToken is
         emit RequestWithdrawal(msg.sender, amount, requestId);
     }
 
+    /// @notice 토큰에 대해 상환 수행하기
+    /// @param requestId 상환 요청 식별자
+    /// @param amount 상환받은 토큰 갯수
+    /// @dev cooldownPeriod가 지나간 후 호출이 가능합니다.
     function withdraw(
         uint256 requestId
     ) external whenNotPaused returns (uint256 amount) {
@@ -135,14 +149,20 @@ contract DeferredToken is
         delete _ownedRequests[owner][lastRequestIndex];
     }
 
+    /// @notice 쿨다운 기간 변경하기
+    /// @param period 쿨다운 기간 (unit: seconds)
     function setCooldownPeriod(uint256 period) external onlyOwner {
         cooldownPeriod = period;
+
+        emit UpdateCooldownPeriod(period);
     }
 
+    /// @notice deposit, requestWithdrawal, withdraw, transfer 일시정지하기 (only Owner)
     function pause() external onlyOwner {
         _pause();
     }
 
+    /// @notice 일시정지 해제 (only Owner)
     function unpause() external onlyOwner {
         _unpause();
     }
