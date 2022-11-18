@@ -223,6 +223,19 @@ describe("STAKING UNIT TEST", async () => {
       await deferredToken
         .connect(user0)
         .deposit(ethers.utils.parseEther("500"));
+      await deferredToken
+        .connect(user1)
+        .deposit(ethers.utils.parseEther("500"));
+
+      await deferredToken
+        .connect(user1)
+        .requestWithdrawal(ethers.utils.parseEther("100"));
+      await deferredToken
+        .connect(user1)
+        .requestWithdrawal(ethers.utils.parseEther("100"));
+      await deferredToken
+        .connect(user1)
+        .requestWithdrawal(ethers.utils.parseEther("100"));
 
       await deferredToken
         .connect(user0)
@@ -348,19 +361,30 @@ describe("STAKING UNIT TEST", async () => {
       );
     });
 
-    it("withdraw id = 4, 2", async () => {
-      const period = await deferredToken.cooldownPeriod();
-      const requestTs = (await deferredToken.withdrawalRequests(4)).requestTs;
-      await jumpToNextBlockTimestamp(requestTs.add(period).toNumber());
+    it("withdraw All", async () => {
+      await jumpDays(100, false);
 
+      await deferredToken.connect(user1).withdraw(2);
+      await deferredToken.connect(user1).withdraw(1);
+      await deferredToken.connect(user1).withdraw(0);
+      await deferredToken.connect(user0).withdraw(7);
+      await deferredToken.connect(user0).withdraw(6);
+      await deferredToken.connect(user0).withdraw(5);
       await deferredToken.connect(user0).withdraw(4);
-      await deferredToken.connect(user0).withdraw(2);
+      await deferredToken.connect(user0).withdraw(3);
 
       expect(
         await deferredToken.withdrawalRequestCounts(user0.address)
-      ).to.be.eq(3);
+      ).to.be.eq(0);
       expect(await token.balanceOf(user0.address)).to.be.eq(
-        ethers.utils.parseEther("200")
+        ethers.utils.parseEther("500")
+      );
+
+      expect(
+        await deferredToken.withdrawalRequestCounts(user1.address)
+      ).to.be.eq(0);
+      expect(await token.balanceOf(user1.address)).to.be.eq(
+        ethers.utils.parseEther("300")
       );
     });
   });
