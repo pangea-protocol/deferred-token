@@ -155,7 +155,7 @@ contract DeferredToken is
             _ownedRequestsIndex[lastRequestId] = requestIndex;
         }
 
-        delete _ownedRequestsIndex[requestIndex];
+        delete _ownedRequestsIndex[requestId];
         delete _ownedRequests[owner][lastRequestIndex];
     }
 
